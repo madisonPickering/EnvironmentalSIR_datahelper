@@ -22,7 +22,7 @@ public class Dataline
 			double avgNumAgEnv, int numAgRecRmv, double avgNumAgRecRmv,
 			int numAgEnvRmv, double avgNumAgEnvRmv)
 	{
-		numLines = 0;
+		numLines = 1; //bc this line has to have been seen once for it to have existed
 		this.numSus = numSus;
 		this.numInf = numInf;
 		this.numRec = numRec;

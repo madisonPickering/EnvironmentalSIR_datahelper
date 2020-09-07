@@ -19,10 +19,17 @@ public class Runner {
 		File root = new File("input");
 		File[] files = root.listFiles();
 		for (int i = 0; i < files.length; i++)
+		{
+			double currentFile = i;
+			System.out.println("Processing file " + (i + 1) + " of " + files.length 
+				+ ". " + (currentFile / files.length) * 100 + " percent completed.");
 			processFile(files[i]);
+		}
 		
 		//log the info read in into an output file
 		logOutput();
+		
+		System.out.println("All " + files.length + " files processed. Exiting...");
 
 	}
 	
@@ -91,18 +98,20 @@ public class Runner {
 			Scanner lineScanner = new Scanner(file);
 			//"throw away" the first line of the file since it contains metadata
 			Scanner tokenScanner = new Scanner(lineScanner.nextLine());
-			tokenScanner.useDelimiter(", "); //since we are parsing .csv
-			int lineNum = 0; //use to keep track of which line we are parsing
+			int lineNum = -1; //use to keep track of how many times a line has been seen
+							//and which line this is. Set to -1 so that it points to index 0 first iter
 			
 			//iterate through the file, adding each line to the running total
 			while (lineScanner.hasNext())
 			{
 				tokenScanner = new Scanner(lineScanner.nextLine());
+				tokenScanner.useDelimiter(", "); //since we are parsing .csv
 				lineNum++;
 				
 				//grab each value and store it in a Dataline if needed
 				while (tokenScanner.hasNext())
 				{
+					tokenScanner.next(); //throw out the line number in the file
 					int numSus = tokenScanner.nextInt();
 					int numInf = tokenScanner.nextInt();
 					int numRec = tokenScanner.nextInt();
@@ -119,7 +128,7 @@ public class Runner {
 					double avgNumAgEnvRmv = tokenScanner.nextDouble();
 				
 					//if this line number hasn't been processed before, make it
-					if (lineNum > runningTot.size())
+					if (lineNum >= runningTot.size())
 					{
 						Dataline newline = new Dataline(numSus, numInf, numRec, numEnv,
 								numAg, numAgInf, avgNumAgInf, numAgTransit, numAgEnv,
