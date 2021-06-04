@@ -1,3 +1,26 @@
+/**Project calculates the average value per line
+ * The output of EnvironmentalSIR (over many runs) is used as the input
+ * to this program; it calculates average values over many lines.
+ * 
+ * @author Madison Pickering
+ * (Copyright 2020 Madison Pickering)
+ * 
+ * This file is part of EnvironmentalSIR_datahelper.
+
+    EnvironmentalSIR_datahelper is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    EnvironmentalSIR_datahelper is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with EnvironmentalSIR_datahelper.  If not, see <https://www.gnu.org/licenses/>.
+ * 
+ */
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -10,10 +33,15 @@ public class Runner {
 	
 	public static ArrayList<Dataline> runningTot;
 	
+	private static int averageEpidemicSize;
+	
 	public static void main(String[] args)
 	{
 		//initialize the running total
 		runningTot = new ArrayList<>();
+		
+		//initialize the average epidemic size
+		averageEpidemicSize = 0;
 		
 		//process each file in the input
 		File root = new File("input");
@@ -21,13 +49,13 @@ public class Runner {
 		for (int i = 0; i < files.length; i++)
 		{
 			double currentFile = i;
-			System.out.println("Processing file " + (i + 1) + " of " + files.length 
+			System.out.println("Processing file " + (i + 1) + " " + files[i].getName() + " of " + files.length 
 				+ ". " + (currentFile / files.length) * 100 + " percent completed.");
 			processFile(files[i]);
 		}
 		
 		//log the info read in into an output file
-		logOutput();
+		logOutput(files.length);
 		
 		System.out.println("All " + files.length + " files processed. Exiting...");
 
@@ -35,8 +63,10 @@ public class Runner {
 	
 	/**Log the info read into runningTot into an output file,
 	 * logging the average value (arithmetic mean) of each value of runningTot
+	 * @param numInputFiles the number of input files, used to calculate the
+	 * average epidemic size
 	 */
-	public static void logOutput()
+	public static void logOutput(int numInputFiles)
 	{
 		
 		try
@@ -73,7 +103,13 @@ public class Runner {
 						+ ", " + lineAvgNumAgRecRmv + ", " + lineNumAgEnvRmv + ", " + lineAvgNumAgEnvRmv
 						+ "\n";
 				writer.write(avgdLine);
-			} 
+			}
+			
+			//finish by writing the average epidemic size out
+			double avgEpi = averageEpidemicSize;
+			double numInput = numInputFiles;
+			avgEpi = (avgEpi / numInput);
+			writer.write("\nAverage epidemic size: " + avgEpi + " individuals");
 			
 			writer.close();
 		}	
@@ -96,7 +132,8 @@ public class Runner {
 		{
 			
 			Scanner lineScanner = new Scanner(file);
-			//"throw away" the first line of the file since it contains metadata
+			//"throw away" the first two lines of the file since it contains metadata
+			lineScanner.nextLine();
 			Scanner tokenScanner = new Scanner(lineScanner.nextLine());
 			int lineNum = -1; //use to keep track of how many times a line has been seen
 							//and which line this is. Set to -1 so that it points to index 0 first iter
@@ -156,6 +193,10 @@ public class Runner {
 						line.setNumAgEnvRmv( line.getNumAgEnvRmv() + numAgEnvRmv);
 						line.setAvgNumAgEnvRmv( line.getAvgNumAgEnvRmv() + avgNumAgEnvRmv);
 					}
+					
+					//if this is the last line in the file, update average epidemic size
+					if (!lineScanner.hasNext())
+						averageEpidemicSize += numRec;
 				}
 			}
 			
